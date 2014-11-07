@@ -25,10 +25,10 @@ enum SignalMode {
 	NONE, FORWARD, BACKWARD
 }
 
-class ChooChoo extends AIController {
+class ChooChooX extends AIController {
 	
 	function Start() {
-		AICompany.SetName("ChooChoo");
+		AICompany.SetName("ChooChooX");
 		AICompany.SetAutoRenewStatus(true);
 		AICompany.SetAutoRenewMonths(0);
 		AICompany.SetAutoRenewMoney(0);

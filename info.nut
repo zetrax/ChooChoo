@@ -1,11 +1,11 @@
-class ChooChoo extends AIInfo {
-	function GetAuthor()      { return "Michiel Konstapel"; }
-	function GetName()        { return "ChooChoo"; }
+class ChooChooX extends AIInfo {
+	function GetAuthor()      { return "Michiel Konstapel & Kim Carlsen"; }
+	function GetName()        { return "ChooChooX"; }
 	function GetDescription() { return "Muck about with trains"; }
 	function GetVersion()     { return 409; }
-	function GetDate()        { return "2012-03-28"; }
-	function CreateInstance() { return "ChooChoo"; }
-	function GetShortName()	  { return "CHOO"; }
+	function GetDate()        { return "2014-11-07"; }
+	function CreateInstance() { return "ChooChooX"; }
+	function GetShortName()	  { return "CHOX"; }
 	function GetAPIVersion()  { return "1.0"; }
 	
 	function GetSettings() {
@@ -18,4 +18,4 @@ class ChooChoo extends AIInfo {
 	}
 }
 
-RegisterAI(ChooChoo());
+RegisterAI(ChooChooX());
