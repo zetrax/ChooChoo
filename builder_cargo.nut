@@ -57,8 +57,9 @@ class BuildCargoLine extends Task {
 						
 			Debug("Selected:", AICargo.GetCargoLabel(cargo), "from", AIIndustry.GetName(a), "to", AIIndustry.GetName(b));
 			
+			local stationA = RoRoStation(CARGO_STATION_LENGTH, 2);
 			// [siteA, rotA, dirA, siteB, rotB, dirB]
-			local sites = FindStationSites(a, b);
+			local sites = FindStationSites(a, b, stationA);
 			if (sites == null) {
 				Debug("Cannot build both stations");
 				throw TaskRetryException();
@@ -67,13 +68,16 @@ class BuildCargoLine extends Task {
 			local siteA = sites[0];
 			local rotA = sites[1];
 			local dirA = sites[2];
-			local stationA = TerminusStation(siteA, rotA, CARGO_STATION_LENGTH);
+			stationA.setLocation(siteA);
+			stationA.setRotation(rotA);
 			
 			local siteB = sites[3];
 			local rotB = sites[4];
 			local dirB = sites[5];
-			local stationB = TerminusStation(siteB, rotB, CARGO_STATION_LENGTH);
-			
+			local stationB = RoRoStation(CARGO_STATION_LENGTH, 2);
+			stationB.setLocation(siteB);
+			stationB.setRotation(rotB);
+
 			// double track cargo lines discarded: we just use them for cheap starting income
 			// old strategy: build the first track and two trains first, which can then finance the upgrade to double track
 			//local reserved = stationA.GetReservedEntranceSpace();
@@ -81,14 +85,16 @@ class BuildCargoLine extends Task {
 			//local exitA = Swap(TerminusStation(siteA, rotA, CARGO_STATION_LENGTH).GetEntrance());
 			//local exitB = TerminusStation(siteB, rotB, CARGO_STATION_LENGTH).GetEntrance();
 			//local firstTrack = BuildTrack(stationA.GetExit(), stationB.GetEntrance(), reserved, SignalMode.NONE, network);
-			
 			local network = Network(railType, CARGO_STATION_LENGTH, MIN_DISTANCE, maxDistance);
 			subtasks = [
 				// location, direction, network, atIndustry, toIndustry, cargo isSource, platformLength
-				BuildCargoStation(this, siteA, dirA, network, a, b, cargo, true, CARGO_STATION_LENGTH),
-				BuildCargoStation(this, siteB, dirB, network, b, a, cargo, false, CARGO_STATION_LENGTH),
-				BuildTrack(this, Swap(stationA.GetEntrance()), stationB.GetEntrance(), [], SignalMode.NONE, network, BuildTrack.FAST),
+				stationA.build(this, network, AIIndustry.GetName(a)),
+				stationB.build(this, network, AIIndustry.GetName(b)),
+				BuildTrack(this, Swap(stationA.GetEntrance()), Swap(stationB.GetExit()), [], SignalMode.BACKWARD, network, BuildTrack.FAST),
+				BuildTrack(this, stationA.GetExit(), stationB.GetEntrance(), [], SignalMode.FORWARD, network, BuildTrack.FAST),
 				//firstTrack,
+				BuildTrains(this, siteA, network, cargo, AIOrder.AIOF_FULL_LOAD_ANY),
+				BuildTrains(this, siteA, network, cargo, AIOrder.AIOF_FULL_LOAD_ANY),
 				BuildTrains(this, siteA, network, cargo, AIOrder.AIOF_FULL_LOAD_ANY),
 				//BuildTrains(this, siteA, network, cargo, AIOrder.AIOF_FULL_LOAD_ANY),
 				//BuildTrack(this, Swap(stationA.GetEntrance()), Swap(stationB.GetExit()), [], SignalMode.BACKWARD, network),
@@ -201,7 +207,7 @@ class BuildCargoLine extends Task {
 		throw TaskRetryException();
 	}
 	
-	function FindStationSites(a, b) {
+	function FindStationSites(a, b, station) {
 		local locA = AIIndustry.GetLocation(a);
 		local locB = AIIndustry.GetLocation(b);
 		
@@ -209,13 +215,13 @@ class BuildCargoLine extends Task {
 		local dirA = StationDirection(locA, locB);
 		local rotA = BuildTerminusStation.StationRotationForDirection(dirA);
 		//local siteA = FindIndustryStationSite(a, true, rotA, locB, CARGO_STATION_LENGTH + 3, 2);
-		local siteA = FindIndustryStationSite(a, true, rotA, locB);
+		local siteA = FindIndustryStationSite(a, true, rotA, locB, station);
 
 		local nameB = AIIndustry.GetName(b);
 		local dirB = StationDirection(locB, locA);
 		local rotB = BuildTerminusStation.StationRotationForDirection(dirB);
 		//local siteB = FindIndustryStationSite(b, false, rotB, locA, CARGO_STATION_LENGTH + 3, 2);
-		local siteB = FindIndustryStationSite(b, false, rotB, locA);
+		local siteB = FindIndustryStationSite(b, false, rotB, locA, station);
 		
 		if (siteA && siteB) {
 			return [siteA, rotA, dirA, siteB, rotB, dirB];
@@ -228,12 +234,13 @@ class BuildCargoLine extends Task {
 	/**
 	 * Find a site for a station at the given industry.
 	 */
-	function FindIndustryStationSite(industry, producing, stationRotation, destination) {
+	function FindIndustryStationSite(industry, producing, stationRotation, destination, station) {
 		local location = AIIndustry.GetLocation(industry);
 		local area = producing ? AITileList_IndustryProducing(industry, RAIL_STATION_RADIUS) : AITileList_IndustryAccepting(industry, RAIL_STATION_RADIUS);
-		
+		local spaceNeeded = station.getSize();		
 		// room for a station
-		area.Valuate(IsBuildableRectangle, stationRotation, [0, -1], [1, CARGO_STATION_LENGTH + 1], true);
+//		area.Valuate(IsBuildableRectangle, stationRotation, [0, -1], [1, CARGO_STATION_LENGTH + 1], true);
+		area.Valuate(IsBuildableRectangle, stationRotation, [0, -1], spaceNeeded, true);
 		area.KeepValue(1);
 		
 		// pick the tile farthest from the destination for increased profit
