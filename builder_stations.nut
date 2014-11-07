@@ -257,6 +257,180 @@ class BuildTerminusStation extends Builder {
 }
 
 /**
+ * l-length, n-platform roro station.
+ */
+class BuildRoRoStation extends Builder {
+	
+	network = null;
+	name = null;
+	platformLength = null;
+	platformCount = null;
+	builtPlatformCount = null;
+	
+	constructor(parentTask, location, rotation, network, name, platformLength = RAIL_STATION_PLATFORM_LENGTH, platformCount = 2) {
+		Builder.constructor(parentTask, location, rotation);
+		this.network = network;
+		this.name = name;
+		this.platformLength = platformLength;
+		this.platformCount = platformCount;
+		this.builtPlatformCount = 0;
+	}
+	
+    /*
+       pc = platform count
+       pl = platform length
+        S = station tiles
+        D = depot tile
+        I = trains in
+        O = trains out
+                        pc
+         -3 -2 -1 0 1 2 3 4 5 6 7 8 9  (x)
+      -3
+      -2          - - - - \
+      -1          | | |   |
+       0          S S S   |
+       1          S S S   |
+       2          S S S   |
+       3          S S S   |
+     pl4          | | |   |
+       5          - - | D |
+       6              |   |
+       7              I   O 
+       8
+       9
+
+      (y)
+    */    
+ 	function Run() {
+		SetConstructionSign(location, this);
+		local stationID = BuildPlatforms();
+		local pl = this.platformLength;
+		local pc = this.platformCount;
+		
+		if (pc > 1) {
+	    	BuildSegment([1, pl+1], [pc-1, pl+1]);                 // (5) Rail in front of platforms perpendicular to station
+	     	BuildRail([pc-2, pl+1], [pc-1, pl+1], [pc-1, pl+2]);   // Connecting (6) with (5)
+		}
+		BuildSegment([pc + 1, -1], [pc + 1, pl + 2]);              // (2) Exit line along train station
+    	BuildRail([pc, -2], [pc+1, -2], [pc+1, -1]);               // Connecting (1) and (2)
+		foreach (i in Range(0, pc)) {
+     		BuildRail([i, -2], [i+1, -2], [i+2, -2]);              // (1) Exit Line perpendicular to train station
+			BuildSegment([i, pl], [i, pl]);                        // (3) Rail in front of all platforms
+			BuildSegment([i, -1], [i, -1]);                        // (4) Rail behind all platforms 
+			BuildRail([i, -1], [i, -2], [i+1, -2]);                // Connecting (4) and (1)
+			BuildRail([i, pl], [i, pl+1], [i+1, pl+1]);            // Connecting (3) and (5)
+	
+			BuildSignal([i, -1], [i, 0],   AIRail.SIGNALTYPE_PBS); // Build platform exit signals
+        }
+		BuildSegment([pc-1, pl+1], [pc-1, pl+2]);                  // (6) Entry line in front of station
+
+		BuildSignal([pc-1, pl+2], [pc-1, pl+3], AIRail.SIGNALTYPE_PBS); // Entry signal
+		BuildSignal([pc, -2], [pc-1, -2], AIRail.SIGNALTYPE_PBS);       // exit signal
+
+		BuildDepot([pc,pl+1], [pc-1,pl+1]);
+		network.depots.append(GetTile([pc,pl+1]));
+     	BuildRail([pc, pl+1], [pc-1, pl+1], [pc-1, pl+2]);         // Connect depot with (6)
+
+		network.stations.append(stationID);
+	}
+	
+	function StationRotationForDirection(direction) {
+		switch (direction) {
+			case Direction.NE: return Rotation.ROT_270;
+			case Direction.SE: return Rotation.ROT_180;
+			case Direction.SW: return Rotation.ROT_90;
+			case Direction.NW: return Rotation.ROT_0;
+			default: throw "invalid direction";
+		}
+	}
+	
+	function Failed() {
+		Task.Failed();
+		
+		local station = AIStation.GetStationID(location);
+		foreach (index, entry in network.stations) {
+			if (entry == station) {
+				network.stations.remove(index);
+				break;
+			}
+		}
+		
+		local depot = GetTile([2,platformLength]);
+		foreach (index, entry in network.depots) {
+			if (entry == depot) {
+				network.depots.remove(index);
+				break;
+			}
+		}
+		
+		foreach (x in Range(0, platformCount + 2)) {
+			foreach (y in Range(-2, platformLength+3)) {
+				Demolish([x,y]);
+			}
+		}
+	}
+	
+	/**
+	 * Build station platforms. Returns stationID.
+	 */
+	function BuildPlatforms() {
+		// template is oriented NW->SE
+		local direction;
+		if (this.rotation == Rotation.ROT_0 || this.rotation == Rotation.ROT_180) {
+			direction = AIRail.RAILTRACK_NW_SE;
+		} else {
+			direction = AIRail.RAILTRACK_NE_SW;
+		}
+		
+		// on the map, location of the station is the topmost tile
+		local platform = [];
+		local cover;
+		if (this.rotation == Rotation.ROT_0) {
+			for (local i=0;i<this.platformCount;i++) {
+				platform.push(GetTile([i, 0]));
+            }
+			cover = platform[0];
+		} else if (this.rotation == Rotation.ROT_90) {
+			for (local i=0;i<this.platformCount;i++) {
+				platform.push(GetTile([i, platformLength-1]));
+			}
+			cover = GetTile([0,1]);
+		} else if (this.rotation == Rotation.ROT_180) {
+			for (local i=0;i<this.platformCount;i++) {
+				platform.push(GetTile([i, platformLength-1]));
+			}
+			cover = GetTile([1,1]);
+		} else if (this.rotation == Rotation.ROT_270) {
+			for (local i=0;i<this.platformCount;i++) {
+				platform.push(GetTile([i,0]));
+			}
+			cover = platform[this.platformCount-1];
+		} else {
+			throw "invalid rotation";
+		}
+		
+		local stationId = AIStation.STATION_NEW;
+		foreach (i, p in platform) {
+			if (builtPlatformCount <= i) {
+				AIRail.BuildRailStation(p, direction, 1, platformLength, stationId);
+				CheckError();
+				builtPlatformCount = i;
+			}
+			stationId = AIStation.GetStationID(platform[0]);
+		}
+		stationId = AIStation.GetStationID(platform[0]);
+
+		//AIRail.BuildRailStation(cover, direction, 2, 2, stationId);
+		
+		return stationId;
+	}
+	
+	function _tostring() {
+		return "BuildRoRoStation at " + name;
+	}
+}
+
+/**
  * Increase the capture area of a train station by joining bus stations to it.
  */
 class BuildBusStations extends Task {
