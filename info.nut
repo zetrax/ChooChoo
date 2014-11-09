@@ -6,7 +6,7 @@ class ChooChooX extends AIInfo {
 	function GetDate()        { return "2014-11-07"; }
 	function CreateInstance() { return "ChooChooX"; }
 	function GetShortName()	  { return "CHOX"; }
-	function GetAPIVersion()  { return "1.0"; }
+	function GetAPIVersion()  { return "1.4"; }
 	
 	function GetSettings() {
 	    AddSetting({name = "CargoLines", description = "Number of single track cargo lines to start with", min_value = 0, max_value = 20, easy_value = 5, medium_value = 10, hard_value = 20, custom_value = 10, flags = AICONFIG_INGAME});

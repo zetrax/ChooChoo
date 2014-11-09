@@ -80,7 +80,7 @@ function GetAutoRenewMoney() {
 	vehicles.Valuate(AIVehicle.GetAgeLeft);
 	vehicles.KeepBelowValue(366);
 	vehicles.Sort(AIList.SORT_BY_VALUE, true);
-	for (local vehicle = vehicles.Begin(); vehicles.HasNext(); vehicle = vehicles.Next()) {
+	for (local vehicle = vehicles.Begin(); !vehicles.IsEnd(); vehicle = vehicles.Next()) {
 		// save money for the next train to be renewed
 		// the oldest may no longer be available, in which case GetPrice() returns -1
 		local engine = AIVehicle.GetEngineType(vehicle);

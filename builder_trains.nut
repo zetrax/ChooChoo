@@ -15,8 +15,8 @@ class BuildTrains extends Task {
 		this.stationTile = stationTile;
 		this.network = network;
 		this.cargo = cargo;
-		this.fromFlags = fromFlags == null ? AIOrder.AIOF_NONE : fromFlags;
-		this.toFlags = toFlags == null ? AIOrder.AIOF_NONE : toFlags;
+		this.fromFlags = fromFlags == null ? AIOrder.OF_NONE : fromFlags;
+		this.toFlags = toFlags == null ? AIOrder.OF_NONE : toFlags;
 		this.cheap = cheap;
 	}
 	
@@ -37,7 +37,7 @@ class BuildTrains extends Task {
 			stationList.KeepTop(TRAINS_ADDED_PER_STATION);
 			
 			subtasks = [];
-			for (local to = stationList.Begin(); stationList.HasNext(); to = stationList.Next()) {
+			for (local to = stationList.Begin(); !stationList.IsEnd(); to = stationList.Next()) {
 				local toDepot = ClosestDepot(to);
 				subtasks.append(BuildTrain(from, to, fromDepot, toDepot, network, fromFlags, toFlags, cargo));
 			}
@@ -196,13 +196,13 @@ class BuildTrain extends Builder {
 
 		// the first train for a station gets a full load order to boost ratings
 		//local first = AIVehicleList_Station(from).Count() == 0;
-		//fromFlags = first ? fromFlags | AIOrder.AIOF_FULL_LOAD_ANY : fromFlags;
+		//fromFlags = first ? fromFlags | AIOrder.OF_FULL_LOAD_ANY : fromFlags;
 		
 		network.trains.append(train);
 		AIOrder.AppendOrder(train, AIStation.GetLocation(from), fromFlags);
-		AIOrder.AppendOrder(train, fromDepot, AIOrder.AIOF_SERVICE_IF_NEEDED);
+		// AIOrder.AppendOrder(train, fromDepot, AIOrder.OF_SERVICE_IF_NEEDED);
 		AIOrder.AppendOrder(train, AIStation.GetLocation(to), toFlags);
-		AIOrder.AppendOrder(train, toDepot, AIOrder.AIOF_SERVICE_IF_NEEDED);
+		// AIOrder.AppendOrder(train, toDepot, AIOrder.OF_SERVICE_IF_NEEDED);
 		AIVehicle.StartStopVehicle(train);
 	}
 	

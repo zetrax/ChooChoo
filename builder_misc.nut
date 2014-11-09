@@ -42,7 +42,7 @@ class LevelTerrain extends Builder {
 		local min = 100;
 		local max = 0;
 		
-		for (local tile = tiles.Begin(); tiles.HasNext(); tile = tiles.Next()) {
+		for (local tile = tiles.Begin(); !tiles.IsEnd(); tile = tiles.Next()) {
 			if (AITile.GetMaxHeight(tile) > max) max = AITile.GetMaxHeight(tile);
 			if (AITile.GetMinHeight(tile) < min) min = AITile.GetMinHeight(tile);
 		}
@@ -50,7 +50,7 @@ class LevelTerrain extends Builder {
 		// prefer rounding up, because foundations can help us raise
 		// tiles to the appropriate height
 		local targetHeight = (min + max + 1) / 2;
-		for (local tile = tiles.Begin(); tiles.HasNext(); tile = tiles.Next()) {
+		for (local tile = tiles.Begin(); !tiles.IsEnd(); tile = tiles.Next()) {
 			LevelTile(tile, targetHeight);
 			
 			// if desired, clear the area, preemptively removing any trees (for town ratings)
@@ -139,7 +139,7 @@ class AppeaseLocalAuthority extends Task {
 		area.Sort(AIList.SORT_BY_VALUE, false);
 		
 		local countdown = 1000;	// "lots"
-		for (local tile = area.Begin(); area.HasNext() && countdown > 0; tile = area.Next()) {
+		for (local tile = area.Begin(); !area.IsEnd() && countdown > 0; tile = area.Next()) {
 			local rating = AITown.GetRating(town, COMPANY);
 			if (rating == AITown.TOWN_RATING_NONE || rating > AITown.TOWN_RATING_POOR) {
 				// good enough ("none" will become "very good")

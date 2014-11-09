@@ -93,13 +93,19 @@ class BuildCargoLine extends Task {
 				BuildTrack(this, Swap(stationA.GetEntrance()), Swap(stationB.GetExit()), [], SignalMode.BACKWARD, network, BuildTrack.FAST),
 				BuildTrack(this, stationA.GetExit(), stationB.GetEntrance(), [], SignalMode.FORWARD, network, BuildTrack.FAST),
 				//firstTrack,
-				BuildTrains(this, siteA, network, cargo, AIOrder.AIOF_FULL_LOAD_ANY),
-				BuildTrains(this, siteA, network, cargo, AIOrder.AIOF_FULL_LOAD_ANY),
-				BuildTrains(this, siteA, network, cargo, AIOrder.AIOF_FULL_LOAD_ANY),
-				//BuildTrains(this, siteA, network, cargo, AIOrder.AIOF_FULL_LOAD_ANY),
+				BuildTrains(this, siteA, network, cargo, AIOrder.OF_FULL_LOAD_ANY),
+				BuildTrains(this, siteA, network, cargo, AIOrder.OF_FULL_LOAD_ANY),
+				// BuildTrains(this, siteA, network, cargo, AIOrder.OF_FULL_LOAD_ANY),
+				//BuildTrains(this, siteA, network, cargo, AIOrder.OF_FULL_LOAD_ANY),
 				//BuildTrack(this, Swap(stationA.GetEntrance()), Swap(stationB.GetExit()), [], SignalMode.BACKWARD, network),
 				//BuildSignals(this, firstTrack, SignalMode.FORWARD),
 			];
+			// foreach (cargo in route.cargoList) {
+			// 	subtasks.push(BuildTrains(this, siteA, network, cargo, AIOrder.OF_FULL_LOAD_ANY));
+			// 	subtasks.push(BuildTrains(this, siteA, network, cargo, AIOrder.OF_FULL_LOAD_ANY));
+			// 	subtasks.push(BuildTrains(this, siteA, network, cargo, AIOrder.OF_FULL_LOAD_ANY));
+			// }
+
 		}
 		
 		RunSubtasks();
@@ -188,13 +194,13 @@ class BuildCargoLine extends Task {
 		// find a random producer/consumer pair that's within our target distance
 		producers.Valuate(AIBase.RandItem);
 		producers.Sort(AIList.SORT_BY_VALUE, true);
-		for (local producer = producers.Begin(); producers.HasNext(); producer = producers.Next()) {
+		for (local producer = producers.Begin(); !producers.IsEnd(); producer = producers.Next()) {
 			local consumers = AIIndustryList_CargoAccepting(cargo);
 			consumers.Valuate(AIIndustry.GetDistanceManhattanToTile, AIIndustry.GetLocation(producer));
 			consumers.KeepAboveValue(CARGO_MIN_DISTANCE);
 			consumers.KeepBelowValue(maxDistance);
 			
-			for (local consumer = consumers.Begin(); consumers.HasNext(); consumer = consumers.Next()) {
+			for (local consumer = consumers.Begin(); !consumers.IsEnd(); consumer = consumers.Next()) {
 				if (FindStationSites(producer, consumer)) {
 					return [producer, consumer];
 				}

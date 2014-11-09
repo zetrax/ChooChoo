@@ -71,8 +71,8 @@ class BuildLine extends Task {
 			copy.AddList(towns);
 			
 			pairs = AIList();
-			for (local a = towns.Begin(); towns.HasNext(); a = towns.Next()) {
-				for (local b = copy.Begin(); copy.HasNext(); b = copy.Next()) {
+			for (local a = towns.Begin(); !towns.IsEnd(); a = towns.Next()) {
+				for (local b = copy.Begin(); !copy.IsEnd(); b = copy.Next()) {
 					// store two 16-bit town IDs in one 32-bit list item, and valuate them with their distance
 					local pair = a + (b << 16);
 					pairs.AddItem(pair, AITown.GetDistanceManhattanToTile(a, AITown.GetLocation(b)));
@@ -172,7 +172,7 @@ class BuildTruckRoute extends Task {
 		// find a random producer/consumer pair that's within our target distance
 		producers.Valuate(AIBase.RandItem);
 		producers.Sort(AIList.SORT_BY_VALUE, true);
-		for (local producer = producers.Begin(); producers.HasNext(); producer = producers.Next()) {
+		for (local producer = producers.Begin(); !producers.IsEnd(); producer = producers.Next()) {
 			consumers.Valuate(AIIndustry.GetDistanceManhattanToTile, AIIndustry.GetLocation(producer));
 			consumers.KeepAboveValue(MIN_DISTANCE);
 			consumers.KeepBelowValue(MAX_DISTANCE);

@@ -85,7 +85,7 @@ function RandomTile() {
  */
 function Sum(list) {
 	local sum = 0;
-	for (local item = list.Begin(); list.HasNext(); item = list.Next()) {
+	for (local item = list.Begin(); !list.IsEnd(); item = list.Next()) {
 		sum += list.GetValue(item);
 	}
 	
@@ -146,7 +146,7 @@ function Swap(tiles) {
  */
 function ListToArray(l) {
 	local a = [];
-	for (local item = l.Begin(); l.HasNext(); item = l.Next()) a.append(item);
+	for (local item = l.Begin(); !l.IsEnd(); item = l.Next()) a.append(item);
 	return a;
 }
 
@@ -238,7 +238,7 @@ function GetMailCargoID() {
 function GetCargoID(cargoClass) {
 	local list = AICargoList();
 	local candidate = -1;
-	for (local i = list.Begin(); list.HasNext(); i = list.Next()) {
+	for (local i = list.Begin(); !list.IsEnd(); i = list.Next()) {
 		if (AICargo.HasCargoClass(i, cargoClass))
 		candidate = i;
 	}

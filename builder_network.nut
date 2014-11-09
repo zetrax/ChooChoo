@@ -63,7 +63,7 @@ class BuildNewNetwork extends Task {
 		local towns = extender.FindTowns();
 		local town = null;
 		local stationTile = null;
-		for (town = towns.Begin(); towns.HasNext(); town = towns.Next()) {
+		for (town = towns.Begin(); !towns.IsEnd(); town = towns.Next()) {
 			stationTile = FindStationSite(town, BuildTerminusStation.StationRotationForDirection(direction), tile);
 			if (stationTile) {
 				return 1;
@@ -425,7 +425,7 @@ class ExtendCrossing extends Builder {
 			
 			town = null;
 			stationTile = null;
-			for (town = towns.Begin(); towns.HasNext(); town = towns.Next()) {
+			for (town = towns.Begin(); !towns.IsEnd(); town = towns.Next()) {
 				stationTile = FindStationSite(town, stationRotation, crossing);
 				if (stationTile) break;
 			}
@@ -493,7 +493,7 @@ class ExtendCrossing extends Builder {
 		
 		// sort descending, then append back-to-front so the closest actually goes first
 		towns.Sort(AIList.SORT_BY_VALUE, false);
-		for (local town = towns.Begin(); towns.HasNext(); town = towns.Next()) {
+		for (local town = towns.Begin(); !towns.IsEnd(); town = towns.Next()) {
 			tasks.insert(1, BuildBusService(null, stationTile, town));
 		}
 	}
@@ -524,7 +524,7 @@ class ExtendCrossing extends Builder {
 		towns.KeepAboveValue(MIN_TOWN_POPULATION);
 		
 		local stations = AIStationList(AIStation.STATION_TRAIN);
-		for (local station = stations.Begin(); stations.HasNext(); station = stations.Next()) {
+		for (local station = stations.Begin(); !stations.IsEnd(); station = stations.Next()) {
 			towns.RemoveItem(AIStation.GetNearestTown(station));
 		}
 		

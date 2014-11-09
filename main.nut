@@ -132,7 +132,7 @@ class ChooChooX extends AIController {
   			local converted;
   			local vehicle;
   			switch (e.GetEventType()) {
-  				case AIEvent.AI_ET_VEHICLE_UNPROFITABLE:
+  				case AIEvent.ET_VEHICLE_UNPROFITABLE:
   					converted = AIEventVehicleUnprofitable.Convert(e);
   					vehicle = converted.GetVehicleID();
   					// see if it's not already going to a depot
@@ -145,7 +145,7 @@ class ChooChooX extends AIController {
   					
   					break;
   					
-				case AIEvent.AI_ET_VEHICLE_WAITING_IN_DEPOT:
+				case AIEvent.ET_VEHICLE_WAITING_IN_DEPOT:
 					converted = AIEventVehicleWaitingInDepot.Convert(e);
 					vehicle = converted.GetVehicleID();
 					Warning("Selling: " + AIVehicle.GetName(vehicle));

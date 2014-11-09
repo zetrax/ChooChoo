@@ -463,7 +463,7 @@ class BuildBusStations extends Task {
 		area.Sort(AIList.SORT_BY_VALUE, true);
 		
 		// try all road tiles; if a station is built, don't build another in its vicinity
-		for (local tile = area.Begin(); area.HasNext(); tile = area.Next()) {
+		for (local tile = area.Begin(); !area.IsEnd(); tile = area.Next()) {
 			if (BuildStationAt(tile)) {
 				stations.append(tile);
 				area.RemoveRectangle(tile - AIMap.GetTileIndex(2, 2), tile + AIMap.GetTileIndex(2, 2));
@@ -551,7 +551,7 @@ class BuildTownBusStation extends Task {
 			area.KeepBelowValue(3);	// 1 and 2 are OK
 			
 			if (area.Count()) {
-				for (local t = area.Begin(); area.HasNext(); t = area.Next()) {
+				for (local t = area.Begin(); !area.IsEnd(); t = area.Next()) {
 					local front = GetAdjRoadTile(t);
 					if (front) {
 						if (AIRoad.BuildDriveThroughRoadStation(t, front, AIRoad.ROADVEHTYPE_BUS, AIStation.STATION_NEW)) {
@@ -638,9 +638,9 @@ class BuildBus extends Task {
 		local bus = AIVehicle.BuildVehicle(depot, engineType);
 		CheckError();
 		
-		AIOrder.AppendOrder(bus, trainStationTile, AIOrder.AIOF_NONE);
-		AIOrder.AppendOrder(bus, busStationTile, AIOrder.AIOF_NONE);
-		AIOrder.AppendOrder(bus, depot, AIOrder.AIOF_NONE);
+		AIOrder.AppendOrder(bus, trainStationTile, AIOrder.OF_NONE);
+		AIOrder.AppendOrder(bus, busStationTile, AIOrder.OF_NONE);
+		AIOrder.AppendOrder(bus, depot, AIOrder.OF_NONE);
 		AIVehicle.StartStopVehicle(bus);
 	}
 	
@@ -679,7 +679,7 @@ function FindTownBusStation(town) {
 	area.KeepValue(town);
 	area.Valuate(AIRoad.IsDriveThroughRoadStationTile);
 	area.KeepValue(1);
-	for (local tile = area.Begin(); area.HasNext(); tile = area.Next()) {
+	for (local tile = area.Begin(); !area.IsEnd(); tile = area.Next()) {
 		local station = AIStation.GetStationID(tile);
 		if (AIStation.HasStationType(station, AIStation.STATION_BUS_STOP) && !AIStation.HasStationType(station, AIStation.STATION_TRAIN)) {
 			return tile;
