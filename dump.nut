@@ -234,7 +234,7 @@ class BuildTruckRoute extends Task {
 						} else {
 							local bridge_list = AIBridgeList_Length(AIMap.DistanceManhattan(path.GetTile(), par.GetTile()) + 1);
 							bridge_list.Valuate(AIBridge.GetMaxSpeed);
-							bridge_list.Sort(AIAbstractList.SORT_BY_VALUE, false);
+							bridge_list.Sort(AIList.SORT_BY_VALUE, false);
 							AIBridge.BuildBridge(AIVehicle.VEHICLE_ROAD, bridge_list.Begin(), path.GetTile(), par.GetTile());
 							CheckError();
 						}
